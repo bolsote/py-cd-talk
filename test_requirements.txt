@@ -1,0 +1,1 @@
+prospector>=0.12
