@@ -50,11 +50,17 @@ pipeline {
             }
         }
         stage('integration tests') {
+            when {
+                branch 'master'
+            }
             steps {
                 echo "You should run integration tests here"
             }
         }
         stage('e2e tests') {
+            when {
+                branch 'master'
+            }
             steps {
                 echo "You should run end to end tests here"
             }
