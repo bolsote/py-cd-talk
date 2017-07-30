@@ -94,7 +94,7 @@ if __name__ == '__main__':
     # Blow it up
     TOTAL = Number(0)
     for n in range(1, 100000):
-        TOTAL = Add(TOTAL, Number(n))
+        TOTAL = Add(TOTAL, Number(n))  # type: ignore
 
     try:
         print(EVAL.visit(TOTAL))
