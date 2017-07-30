@@ -1,3 +1,5 @@
-flake8==3.4.1
-pylint==1.7.2
-mypy==0.521
+flake8
+pylint
+mypy
+bandit
+safety

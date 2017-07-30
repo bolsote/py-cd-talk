@@ -35,5 +35,29 @@ pipeline {
                 )
             }
         }
+        stage('unit tests') {
+            steps {
+                echo "You should run unit tests here"
+            }
+        }
+        stage('security') {
+            steps {
+                sh '''
+                    . ve/bin/activate
+                    bandit -r src/
+                    LC_ALL=en_GB.UTF-8 safety check
+                '''
+            }
+        }
+        stage('integration tests') {
+            steps {
+                echo "You should run integration tests here"
+            }
+        }
+        stage('e2e tests') {
+            steps {
+                echo "You should run end to end tests here"
+            }
+        }
     }
 }
