@@ -11,19 +11,28 @@ pipeline {
                 '''
             }
         }
- 
-        stage('linting') {
+        stage('static analysis') {
             steps {
-                sh '''
-                    . ve/bin/activate
-                    flake8 ./src || error=true
-                    pylint ./src || error=true
+                parallel (
+                    "linting": {
+                        sh '''
+                            . ve/bin/activate
+                            flake8 ./src || error=true
+                            pylint ./src || error=true
 
-                    if [ $error ]
-                    then
-                        exit 1
-                    fi
-                '''
+                            if [ $error ]
+                            then
+                                exit 1
+                            fi
+                        '''
+                    },
+                    "types": {
+                        sh '''
+                            . ve/bin/activate
+                            mypy ./src
+                        '''
+                    }
+                )
             }
         }
     }
