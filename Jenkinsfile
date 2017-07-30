@@ -16,8 +16,13 @@ pipeline {
             steps {
                 sh '''
                     . ve/bin/activate
-                    flake8 ./src
-                    pylint ./src
+                    flake8 ./src || error=true
+                    pylint ./src || error=true
+
+                    if [ $error ]
+                    then
+                        exit 1
+                    fi
                 '''
             }
         }
