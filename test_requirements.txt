@@ -1,1 +1,2 @@
-prospector>=0.12
+flake8==3.4.1
+pylint==1.7.2

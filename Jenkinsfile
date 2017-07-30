@@ -16,7 +16,8 @@ pipeline {
             steps {
                 sh '''
                     . ve/bin/activate
-                    prospector
+                    flake8 ./src
+                    pylint ./src
                 '''
             }
         }
