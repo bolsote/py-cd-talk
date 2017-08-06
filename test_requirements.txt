@@ -1,5 +1,0 @@
-flake8
-pylint
-mypy
-bandit
-safety

@@ -1,0 +1,15 @@
+[MASTER]
+ignore=.git ve
+jobs=1
+persistent=yes
+
+[REPORTS]
+output-format=text
+reports=yes
+score=yes
+
+[BASIC]
+good-names=i,j,k,l,m,n,ex,Run,_
+
+[MISCELLANEOUS]
+notes=FIXME,XXX,TODO

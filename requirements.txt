@@ -1,0 +1,10 @@
+bandit
+flake8
+hypothesis
+mypy
+pdbpp
+pylint
+pytest
+pytest-benchmark
+safety
+vmprof
