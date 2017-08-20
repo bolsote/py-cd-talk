@@ -2,7 +2,6 @@ bandit
 flake8
 hypothesis
 invoke
-mypy
 pdbpp
 pylint
 pytest
