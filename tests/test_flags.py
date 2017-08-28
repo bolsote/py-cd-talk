@@ -1,3 +1,5 @@
+# pylint: disable=invalid-name,missing-docstring,no-self-use,unused-argument
+
 import pytest
 
 from zope.interface.verify import verifyClass
@@ -18,6 +20,14 @@ class TestInterfaces:
 
 @pytest.mark.unit
 class TestFlagBasics:
+    def test_flag_create(self, fakestore):
+        flag = BinaryFlag(
+            "flag0",
+            store=fakestore,
+        )
+        flag.set()
+        assert flag
+
     def test_flag_get_set(self, fakeflag):
         fakeflag.value = True
         assert fakeflag
@@ -43,9 +53,9 @@ class TestFlagOperations:
         flag0.unset()
         flag1 = BinaryFlag("flag1", store=fakestore)
         flag1.set()
-        assert not (flag0 & flag0)
-        assert not (flag0 & flag1)
-        assert not (flag1 & flag0)
+        assert not flag0 & flag0
+        assert not flag0 & flag1
+        assert not flag1 & flag0
         assert flag1 & flag1
 
     def test_flag_or(self, fakestore):
@@ -53,7 +63,7 @@ class TestFlagOperations:
         flag0.unset()
         flag1 = BinaryFlag("flag1", store=fakestore)
         flag1.set()
-        assert not (flag0 | flag0)
+        assert not flag0 | flag0
         assert flag0 | flag1
         assert flag1 | flag0
         assert flag1 | flag1
@@ -63,10 +73,10 @@ class TestFlagOperations:
         flag0.unset()
         flag1 = BinaryFlag("flag1", store=fakestore)
         flag1.set()
-        assert not (flag0 ^ flag0)
+        assert not flag0 ^ flag0
         assert flag0 ^ flag1
         assert flag1 ^ flag0
-        assert not (flag1 ^ flag1)
+        assert not flag1 ^ flag1
 
     def test_flag_not(self, fakestore):
         flag0 = BinaryFlag("flag0", store=fakestore)
@@ -75,7 +85,7 @@ class TestFlagOperations:
         flag1.set()
 
         assert ~flag0
-        assert not (~flag1)
+        assert not ~flag1
 
 
 @pytest.mark.unit
@@ -85,7 +95,7 @@ class TestFlagCall:
             return "executed"
 
         fakeflag.set()
-        assert fakeflag(testfun)() is "executed"
+        assert fakeflag(testfun)() == "executed"
         fakeflag.unset()
         assert fakeflag(testfun)() is None
 
@@ -122,6 +132,12 @@ class TestSQLStorage:
 
 
 @pytest.mark.integration
-class TestFlagsUsedDateTime:
-    def test_used_date_set_when_used(self):
+class TestFlagsActive:
+    def test_flag_new(self):
+        pass
+
+    def test_flag_active(self):
+        pass
+
+    def test_flag_inactive(self):
         pass

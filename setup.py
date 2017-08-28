@@ -1,4 +1,17 @@
 from setuptools import setup, find_packages
+import platform
+
+
+if platform.python_implementation() == "PyPy":
+    PGSQL_DRV = ["psycopg2cffi==2.7.6"]
+else:
+    PGSQL_DRV = ["psycopg2==2.7.3.1"]
+
+_REQUIRES = [
+    "SQLAlchemy==1.1.13",
+    "zope.interface==4.4.2",
+] + PGSQL_DRV
+
 
 setup(
     name="Ensign",
@@ -8,11 +21,7 @@ setup(
     author_email="dev@marshland.es",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
-    install_requires=[
-        "psycopg2cffi==2.7.6",
-        "SQLAlchemy==1.1.13",
-        "zope.interface==4.4.2",
-    ],
+    install_requires=_REQUIRES,
     python_requires=">=3.5",
     zip_safe=False,
 )

@@ -1,5 +1,10 @@
-# import os
-from collections import namedtuple
+"""
+Test fixtures and test utilities.
+"""
+
+# pylint: disable=invalid-name,no-self-use,redefined-outer-name
+
+import os
 
 import pytest
 
@@ -16,35 +21,67 @@ STORE = {}
 
 @implementer(IStorage)
 class FakeStorage:
+    """
+    Fake storage class, to simulate a very simple datastore.
+    """
+
     STORE = {}
 
-    def create(self, name, type, **kwargs):
+    def create(self, name, flagtype, **kwargs):
+        """
+        Create a new flag, with its value set to None.
+        """
+
         self.STORE[name] = dict(
             name=name,
-            type=type,
+            type=flagtype,
             value_binary=None,
             **kwargs,
         )
 
     def load(self, name):
+        """
+        Load a flag's value from the store, given its name.
+        """
+
         return self.STORE[name]["value_binary"]
 
     def store(self, name, value):
+        """
+        Store a flag's value to the store, given its name.
+        """
+
         self.STORE[name]["value_binary"] = value
 
 
 @pytest.fixture(scope="function")
 def fakestore():
+    """
+    Fixture providing a fake storage.
+    It's cleaned up for every test.
+    """
+
     return FakeStorage()
 
 
 @pytest.fixture(scope="function")
 def fakeflag(fakestore):
+    """
+    Fixture providing a flag stored in fake storage.
+    It's generated anew for every test.
+    """
+
     return BinaryFlag("fakeflag", store=fakestore)
 
 
 @pytest.fixture(scope="session")
 def _pre_db():
+    """
+    Fixture preparing the test database and establishing all the necessary
+    connections, and cleaning everything up when done.
+    The operations are performed just once per session.
+    """
+
     engine = sa.create_engine(os.environ.get("MGMT_DB"))
     conn = engine.connect()
     conn.execute("commit")
@@ -61,6 +98,11 @@ def _pre_db():
 
 @pytest.fixture(scope="function")
 def db(_pre_db):
+    """
+    Fixture providing access to a test database.
+    Transactions are rolled back for every test.
+    """
+
     conn = DefaultStorage.connection
     trans = conn.begin()
     yield

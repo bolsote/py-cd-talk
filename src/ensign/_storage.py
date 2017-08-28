@@ -1,3 +1,5 @@
+# pylint: disable=invalid-name,no-value-for-parameter
+
 import enum
 import os
 
@@ -41,31 +43,31 @@ class SQLStorage:
         self.metadata.create_all(self.engine)
         self.connection = self.engine.connect()
 
-    def create(self, name, type, **kwargs):
-        s = self.flags.insert().values(name=name, type=type, **kwargs)
-        self.connection.execute(s)
+    def create(self, name, flagtype, **kwargs):
+        query = self.flags.insert().values(name=name, type=flagtype, **kwargs)
+        self.connection.execute(query)
 
     def load(self, name):
         with self.connection.begin():
-            s = sa.select([self.flags.c.value_binary]).\
-                    where(self.flags.c.name == name)
-            data = self.connection.execute(s).fetchone()
-            self.flags.update().\
-                    where(self.flags.c.name == name).\
-                    values(used=sa.func.now())
-            self.connection.execute(s)
+            query = sa.select([self.flags.c.value_binary]).\
+                where(self.flags.c.name == name)
+            data = self.connection.execute(query).fetchone()
+            query = self.flags.update().\
+                where(self.flags.c.name == name).\
+                values(used=sa.func.now())
+            self.connection.execute(query)
             return data["value_binary"]
 
     def store(self, name, value):
-        s = self.flags.update().\
+        query = self.flags.update().\
                 where(self.flags.c.name == name).\
                 values(value_binary=value)
-        self.connection.execute(s)
+        self.connection.execute(query)
 
     def used(self, name):
-        s = sa.select([self.flags.c.used]).\
+        query = sa.select([self.flags.c.used]).\
                 where(self.flags.c.name == name)
-        return self.connection.execute(s).fetchone()["value_binary"]
+        return self.connection.execute(query).fetchone()["value_binary"]
 
 
 DefaultStorage = SQLStorage()

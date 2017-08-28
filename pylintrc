@@ -5,7 +5,7 @@ persistent=yes
 
 [REPORTS]
 output-format=text
-reports=yes
+reports=no
 score=yes
 
 [BASIC]
