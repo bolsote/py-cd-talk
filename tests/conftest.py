@@ -17,9 +17,6 @@ from ensign._interfaces import IStorage
 from ensign._storage import DefaultStorage
 
 
-STORE = {}
-
-
 @implementer(IStorage)
 class FakeStorage:
     """
