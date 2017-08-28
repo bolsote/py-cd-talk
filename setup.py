@@ -9,6 +9,7 @@ setup(
     package_dir={"": "src"},
     packages=find_packages(where="src"),
     install_requires=[
+        "psycopg2cffi==2.7.6",
         "SQLAlchemy==1.1.13",
         "zope.interface==4.4.2",
     ],
