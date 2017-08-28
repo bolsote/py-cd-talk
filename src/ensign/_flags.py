@@ -1,3 +1,4 @@
+import abc
 import datetime
 import enum
 
@@ -14,7 +15,8 @@ class FlagActive(enum.Enum):
     NEW = 2
 
 
-class Flag:
+class Flag(metaclass=abc.ABCMeta):
+    TYPE = None
     DAYS_INACTIVE = 7
 
     def __init__(self, name, store=DefaultStorage, **kwargs):
@@ -29,12 +31,15 @@ class Flag:
         return self._check()
 
     def __and__(self, other):
+        # pylint: disable=protected-access
         return self._check() & other._check()
 
     def __or__(self, other):
+        # pylint: disable=protected-access
         return self._check() | other._check()
 
     def __xor__(self, other):
+        # pylint: disable=protected-access
         return self._check() ^ other._check()
 
     def __invert__(self):
@@ -47,6 +52,7 @@ class Flag:
                 return target(*args, **kwargs)
         return wrapper
 
+    @abc.abstractmethod
     def _check(self):
         return False
 
