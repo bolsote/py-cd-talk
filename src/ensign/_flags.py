@@ -1,3 +1,8 @@
+"""
+Feature flag-related classes. Provides an abstract flag implementation, and a
+concrete implementation of a binary flag.
+"""
+
 import abc
 import datetime
 import enum
@@ -10,12 +15,23 @@ from ensign._storage import DefaultStorage, FlagTypes
 
 
 class FlagActive(enum.Enum):
+    """
+    Possible values for a flag activity indicator:
+     - Inactive: Flag has not been used in DAYS_INACTIVE (see Flag class).
+     - Active: Flag has been used recently.
+     - New: Flag has never been used.
+    """
+
     INACTIVE = 0
     ACTIVE = 1
     NEW = 2
 
 
 class Flag(metaclass=abc.ABCMeta):
+    """
+    Flag base class, for all concrete flag implementations to inherit from.
+    """
+
     TYPE = None
     DAYS_INACTIVE = 7
 
@@ -48,24 +64,46 @@ class Flag(metaclass=abc.ABCMeta):
     def __call__(self, target):
         @wraps(target)
         def wrapper(*args, **kwargs):
+            """
+            If the flag evaluates to True, go through with the target
+            function. Otherwise, skip it.
+            """
+
             if self._check():
                 return target(*args, **kwargs)
+
         return wrapper
 
     @abc.abstractmethod
     def _check(self):
+        """
+        Returns the result of evaluating the flag. Must be a boolean value.
+        """
+
         return False
 
     @property
     def value(self):
+        """
+        Get the flag's stored value.
+        """
+
         return self.store.load(self.name)
 
     @value.setter
     def value(self, val):
+        """
+        Set the flag's stored value.
+        """
+
         self.store.store(self.name, val)
 
     @property
     def active(self):
+        """
+        Return the flag's activity indicator. See the FlagActive's enum.
+        """
+
         used = self.store.used(self.name)
         if used is None:
             return FlagActive.NEW
@@ -79,13 +117,25 @@ class Flag(metaclass=abc.ABCMeta):
 
 @implementer(IFlag)
 class BinaryFlag(Flag):
+    """
+    Implementation of a flag storing a boolean value.
+    """
+
     TYPE = FlagTypes.BINARY
 
     def _check(self):
         return self.value
 
     def set(self):
+        """
+        Shortcut method to set() (to True) the flag's value.
+        """
+
         self.value = True
 
     def unset(self):
+        """
+        Shortcut method to unset() (to False) the flag's value.
+        """
+
         self.value = False
