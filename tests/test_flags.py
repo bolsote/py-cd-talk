@@ -1,15 +1,15 @@
-# pylint: disable=invalid-name,missing-docstring,no-self-use,unused-argument
-
-import pytest
+# pylint: disable=invalid-name,missing-docstring,no-self-use
 
 import datetime
+
+import pytest
 
 from zope.interface.verify import verifyClass
 
 from ensign import BinaryFlag
 from ensign._flags import FlagActive, FlagDoesNotExist
 from ensign._interfaces import IFlag, IStorage
-from ensign._storage import SQLStorage
+from ensign._storage import DefaultStorage, SQLStorage, FlagTypes
 
 
 @pytest.mark.unit
@@ -141,8 +141,9 @@ class TestFlagActive:
 
 
 @pytest.mark.integration
-class TestSQLStorage:
-    def test_create_flags(self, db):
+@pytest.mark.usefixtures("db")
+class TestSQLBackedFlags:
+    def test_create_flags(self):
         flag0 = BinaryFlag.create(
             "flag0",
             value_binary=True,
@@ -152,7 +153,11 @@ class TestSQLStorage:
         )
         assert flag0
 
-    def test_get_set_flags(self, db):
+    def test_flag_exists(self):
+        with pytest.raises(FlagDoesNotExist):
+            BinaryFlag("flag0")
+
+    def test_get_set_flags(self):
         flag0 = BinaryFlag.create("flag0")
         assert flag0.value is None
         flag0.value = True
@@ -160,19 +165,40 @@ class TestSQLStorage:
         flag0.value = False
         assert not flag0
 
-    def test_flag_new(self, db):
+    def test_flag_new(self):
         flag0 = BinaryFlag.create("flag0")
         assert flag0.active == FlagActive.NEW
 
-    def test_flag_active(self, db):
+    def test_flag_active(self):
         flag0 = BinaryFlag.create("flag0")
         flag0.set()
         assert flag0
         assert flag0.active == FlagActive.ACTIVE
 
-    def test_flag_inactive(self, db):
+    def test_flag_inactive(self):
         flag0 = BinaryFlag.create(
             "flag0",
             used=datetime.datetime.now() - datetime.timedelta(days=8),
         )
         assert flag0.active == FlagActive.INACTIVE
+
+
+@pytest.mark.integration
+@pytest.mark.usefixtures("db")
+class TestSQLStorage:
+    def test_exists(self):
+        DefaultStorage.create("flag0", flagtype=FlagTypes.BINARY)
+        assert DefaultStorage.exists("flag0")
+        assert not DefaultStorage.exists("flag1")
+
+    def test_load_store(self):
+        DefaultStorage.create("flag0", flagtype=FlagTypes.BINARY)
+        DefaultStorage.store("flag0", True)
+        assert DefaultStorage.load("flag0") is True
+        DefaultStorage.store("flag0", False)
+        assert DefaultStorage.load("flag0") is False
+
+    def test_used(self):
+        used = datetime.datetime.now()
+        DefaultStorage.create("flag0", flagtype=FlagTypes.BINARY, used=used)
+        assert DefaultStorage.used("flag0") == used

@@ -49,6 +49,11 @@ class Flag(metaclass=abc.ABCMeta):
 
     @classmethod
     def create(cls, name, store=DefaultStorage, **kwargs):
+        """
+        Create a new flag, given its name and extra arguments, in the provided
+        store.
+        """
+
         store.create(name, cls.TYPE, **kwargs)
         return cls(name, store=store)
 

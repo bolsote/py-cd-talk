@@ -41,6 +41,10 @@ class FakeStorage:
         )
 
     def exists(self, name):
+        """
+        Check if a flag exists.
+        """
+
         return name in self.STORE
 
     def load(self, name):
