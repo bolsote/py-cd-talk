@@ -14,6 +14,7 @@ class IFlag(Interface):
     store = Attribute("""Flag storage backend""")
     name = Attribute("""Flag name""")
     value = Attribute("""Flag value""")
+    active = Attribute("""Flag activity indicator""")
 
     def _check():
         """
@@ -36,3 +37,6 @@ class IStorage(Interface):
 
     def store(name, value):
         """Store a value."""
+
+    def used(name):
+        """Get last used date."""
