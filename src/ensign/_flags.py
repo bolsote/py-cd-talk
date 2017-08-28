@@ -14,6 +14,12 @@ from ensign._interfaces import IFlag
 from ensign._storage import DefaultStorage, FlagTypes
 
 
+class FlagDoesNotExist(Exception):
+    """
+    Exception raised when trying to instantiate an inexisting flag.
+    """
+
+
 class FlagActive(enum.Enum):
     """
     Possible values for a flag activity indicator:
@@ -35,10 +41,16 @@ class Flag(metaclass=abc.ABCMeta):
     TYPE = None
     DAYS_INACTIVE = 7
 
-    def __init__(self, name, store=DefaultStorage, **kwargs):
+    def __init__(self, name, store=DefaultStorage):
         self.name = name
         self.store = store
-        self.store.create(self.name, self.TYPE, **kwargs)
+        if not self.store.exists(self.name):
+            raise FlagDoesNotExist()
+
+    @classmethod
+    def create(cls, name, store=DefaultStorage, **kwargs):
+        store.create(name, cls.TYPE, **kwargs)
+        return cls(name, store=store)
 
     def __str__(self):
         return f"<Flag({self.name}={self.value})>"
@@ -79,8 +91,6 @@ class Flag(metaclass=abc.ABCMeta):
         """
         Returns the result of evaluating the flag. Must be a boolean value.
         """
-
-        return False
 
     @property
     def value(self):

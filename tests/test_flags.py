@@ -2,9 +2,12 @@
 
 import pytest
 
+import datetime
+
 from zope.interface.verify import verifyClass
 
 from ensign import BinaryFlag
+from ensign._flags import FlagActive, FlagDoesNotExist
 from ensign._interfaces import IFlag, IStorage
 from ensign._storage import SQLStorage
 
@@ -21,7 +24,7 @@ class TestInterfaces:
 @pytest.mark.unit
 class TestFlagBasics:
     def test_flag_create(self, fakestore):
-        flag = BinaryFlag(
+        flag = BinaryFlag.create(
             "flag0",
             store=fakestore,
         )
@@ -33,6 +36,10 @@ class TestFlagBasics:
         assert fakeflag
         fakeflag.value = False
         assert not fakeflag
+
+    def test_flag_raises_if_inexistent(self, fakestore):
+        with pytest.raises(FlagDoesNotExist):
+            BinaryFlag("flag42", store=fakestore)
 
 
 @pytest.mark.unit
@@ -49,9 +56,9 @@ class TestBinaryFlagAliases:
 @pytest.mark.unit
 class TestFlagOperations:
     def test_flag_and(self, fakestore):
-        flag0 = BinaryFlag("flag0", store=fakestore)
+        flag0 = BinaryFlag.create("flag0", store=fakestore)
         flag0.unset()
-        flag1 = BinaryFlag("flag1", store=fakestore)
+        flag1 = BinaryFlag.create("flag1", store=fakestore)
         flag1.set()
         assert not flag0 & flag0
         assert not flag0 & flag1
@@ -59,9 +66,9 @@ class TestFlagOperations:
         assert flag1 & flag1
 
     def test_flag_or(self, fakestore):
-        flag0 = BinaryFlag("flag0", store=fakestore)
+        flag0 = BinaryFlag.create("flag0", store=fakestore)
         flag0.unset()
-        flag1 = BinaryFlag("flag1", store=fakestore)
+        flag1 = BinaryFlag.create("flag1", store=fakestore)
         flag1.set()
         assert not flag0 | flag0
         assert flag0 | flag1
@@ -69,9 +76,9 @@ class TestFlagOperations:
         assert flag1 | flag1
 
     def test_flag_xor(self, fakestore):
-        flag0 = BinaryFlag("flag0", store=fakestore)
+        flag0 = BinaryFlag.create("flag0", store=fakestore)
         flag0.unset()
-        flag1 = BinaryFlag("flag1", store=fakestore)
+        flag1 = BinaryFlag.create("flag1", store=fakestore)
         flag1.set()
         assert not flag0 ^ flag0
         assert flag0 ^ flag1
@@ -79,9 +86,9 @@ class TestFlagOperations:
         assert not flag1 ^ flag1
 
     def test_flag_not(self, fakestore):
-        flag0 = BinaryFlag("flag0", store=fakestore)
+        flag0 = BinaryFlag.create("flag0", store=fakestore)
         flag0.unset()
-        flag1 = BinaryFlag("flag1", store=fakestore)
+        flag1 = BinaryFlag.create("flag1", store=fakestore)
         flag1.set()
 
         assert ~flag0
@@ -110,10 +117,33 @@ class TestFlagCall:
         assert testfun() is None
 
 
+@pytest.mark.unit
+class TestFlagActive:
+    def test_flag_new(self, fakestore):
+        flag0 = BinaryFlag.create("flag0", store=fakestore)
+        assert flag0.active == FlagActive.NEW
+
+    def test_flag_active(self, fakestore):
+        flag0 = BinaryFlag.create(
+            "flag0",
+            store=fakestore,
+            used=datetime.datetime.now(),
+        )
+        assert flag0.active == FlagActive.ACTIVE
+
+    def test_flag_inactive(self, fakestore):
+        flag0 = BinaryFlag.create(
+            "flag0",
+            store=fakestore,
+            used=datetime.datetime.now() - datetime.timedelta(days=8),
+        )
+        assert flag0.active == FlagActive.INACTIVE
+
+
 @pytest.mark.integration
 class TestSQLStorage:
     def test_create_flags(self, db):
-        flag0 = BinaryFlag(
+        flag0 = BinaryFlag.create(
             "flag0",
             value_binary=True,
             label="Test flag 0",
@@ -123,21 +153,26 @@ class TestSQLStorage:
         assert flag0
 
     def test_get_set_flags(self, db):
-        flag0 = BinaryFlag("flag0")
+        flag0 = BinaryFlag.create("flag0")
         assert flag0.value is None
         flag0.value = True
         assert flag0
         flag0.value = False
         assert not flag0
 
+    def test_flag_new(self, db):
+        flag0 = BinaryFlag.create("flag0")
+        assert flag0.active == FlagActive.NEW
 
-@pytest.mark.integration
-class TestFlagsActive:
-    def test_flag_new(self):
-        pass
+    def test_flag_active(self, db):
+        flag0 = BinaryFlag.create("flag0")
+        flag0.set()
+        assert flag0
+        assert flag0.active == FlagActive.ACTIVE
 
-    def test_flag_active(self):
-        pass
-
-    def test_flag_inactive(self):
-        pass
+    def test_flag_inactive(self, db):
+        flag0 = BinaryFlag.create(
+            "flag0",
+            used=datetime.datetime.now() - datetime.timedelta(days=8),
+        )
+        assert flag0.active == FlagActive.INACTIVE

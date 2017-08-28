@@ -67,6 +67,15 @@ class SQLStorage:
         query = self.flags.insert().values(name=name, type=flagtype, **kwargs)
         self.connection.execute(query)
 
+    def exists(self, name):
+        """
+        Given a flags name, check if it exists in the store.
+        """
+
+        query = sa.select([sa.exists().where(self.flags.c.name == name)])
+        res = self.connection.execute(query).fetchone()
+        return res[0]
+
     def load(self, name):
         """
         Load a flag's value given its name. Updates the last used date.

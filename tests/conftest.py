@@ -40,6 +40,9 @@ class FakeStorage:
             **kwargs,
         )
 
+    def exists(self, name):
+        return name in self.STORE
+
     def load(self, name):
         """
         Load a flag's value from the store, given its name.
@@ -59,7 +62,7 @@ class FakeStorage:
         Get a flag's last used datetime, given its name.
         """
 
-        return self.STORE[name]["used"]
+        return self.STORE[name].get("used")
 
 
 @pytest.fixture(scope="function")
@@ -79,7 +82,7 @@ def fakeflag(fakestore):
     It's generated anew for every test.
     """
 
-    return BinaryFlag("fakeflag", store=fakestore)
+    return BinaryFlag.create("fakeflag", store=fakestore)
 
 
 @pytest.fixture(scope="session")

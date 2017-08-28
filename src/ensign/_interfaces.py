@@ -16,6 +16,12 @@ class IFlag(Interface):
     value = Attribute("""Flag value""")
     active = Attribute("""Flag activity indicator""")
 
+    def create(name, store, **kwargs):
+        """
+        Create a new flag with the given name and, optionally, extra data,
+        persisted in the given store.
+        """
+
     def _check():
         """
         Check whether the flag current value means the feature is active.
@@ -31,6 +37,9 @@ class IStorage(Interface):
 
     def create(name, type, **kwargs):
         """Create a new flag."""
+
+    def exists(name):
+        """Check if the flag exists in the store."""
 
     def load(name):
         """Load a value."""
