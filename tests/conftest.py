@@ -44,8 +44,8 @@ def fakeflag(fakestore):
 
 
 @pytest.fixture(scope="session")
-def db():
-    engine = sa.create_engine("postgresql+psycopg2cffi:///postgres")
+def _pre_db():
+    engine = sa.create_engine(os.environ.get("MGMT_DB"))
     conn = engine.connect()
     conn.execute("commit")
     conn.execute("create database flags_test")
@@ -60,9 +60,8 @@ def db():
 
 
 @pytest.fixture(scope="function")
-def trans(db):
+def db(_pre_db):
     conn = DefaultStorage.connection
     trans = conn.begin()
     yield
     trans.rollback()
-

@@ -95,14 +95,14 @@ class TestFlagCall:
             return "executed"
 
         fakeflag.set()
-        assert testfun() is "executed"
+        assert testfun() == "executed"
         fakeflag.unset()
         assert testfun() is None
 
 
 @pytest.mark.integration
 class TestSQLStorage:
-    def test_create_flags(self, trans):
+    def test_create_flags(self, db):
         flag0 = BinaryFlag(
             "flag0",
             value_binary=True,
@@ -112,7 +112,7 @@ class TestSQLStorage:
         )
         assert flag0
 
-    def test_get_set_flags(self, trans):
+    def test_get_set_flags(self, db):
         flag0 = BinaryFlag("flag0")
         assert flag0.value is None
         flag0.value = True
