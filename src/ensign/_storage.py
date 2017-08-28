@@ -99,7 +99,7 @@ class SQLStorage:
 
         query = sa.select([self.flags.c.used]).\
             where(self.flags.c.name == name)
-        return self.connection.execute(query).fetchone()["value_binary"]
+        return self.connection.execute(query).fetchone()["used"]
 
 
 DefaultStorage = SQLStorage()
