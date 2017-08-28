@@ -10,6 +10,7 @@ import pytest
 
 import sqlalchemy as sa
 from zope.interface import implementer
+from zope.interface.verify import verifyObject
 
 from ensign import BinaryFlag
 from ensign._interfaces import IStorage
@@ -26,6 +27,9 @@ class FakeStorage:
     """
 
     STORE = {}
+
+    def __init__(self):
+        assert verifyObject(IStorage, self)
 
     def create(self, name, flagtype, **kwargs):
         """
@@ -52,6 +56,13 @@ class FakeStorage:
         """
 
         self.STORE[name]["value_binary"] = value
+
+    def used(self, name):
+        """
+        Get a flag's last used datetime, given its name.
+        """
+
+        return self.STORE[name]["used"]
 
 
 @pytest.fixture(scope="function")
