@@ -1,69 +1,96 @@
-pipeline {
-    agent any
+def quick_build(def cov_option) {
+	return [
+		stage('linting') {
+			sh "tox -e linting"
+		},
+		stage('security') {
+			sh "tox -e security"
+		},
+		stage('unit tests') {
+			sh '''
+				tox -e pypy3-${cov_option} -- -m unit || error=true
+				tox -e py36-${cov_option} -- -m unit || error=true
 
-    stages {
-        stage('setup') {
-            steps{
-                sh '''
-                    python3 -m venv ve
-                    . ve/bin/activate
-                    pip install -r test_requirements.txt
-                '''
-            }
-        }
-        stage('static analysis') {
-            steps {
-                parallel (
-                    "linting": {
-                        sh '''
-                            . ve/bin/activate
-                            flake8 ./src || error=true
-                            pylint ./src || error=true
+				if [ $error ]
+				then
+					exit 1
+				fi
+			'''
+		}
+	]
+}
 
-                            if [ $error ]
-                            then
-                                exit 1
-                            fi
-                        '''
-                    },
-                    "types": {
-                        sh '''
-                            . ve/bin/activate
-                            mypy ./src
-                        '''
-                    }
-                )
-            }
-        }
-        stage('unit tests') {
-            steps {
-                echo "You should run unit tests here"
-            }
-        }
-        stage('security') {
-            steps {
-                sh '''
-                    . ve/bin/activate
-                    bandit -r src/
-                    LC_ALL=en_GB.UTF-8 safety check
-                '''
-            }
-        }
-        stage('integration tests') {
-            when {
-                branch 'master'
-            }
-            steps {
-                echo "You should run integration tests here"
-            }
-        }
-        stage('e2e tests') {
-            when {
-                branch 'master'
-            }
-            steps {
-                echo "You should run end to end tests here"
-            }
-        }
-    }
+def full_build() {
+	def stages = quick_build("cov")
+	stages.push(
+		stage('integration tests') {
+			sh '''
+				tox -e pypy3-cov -- -m integration || error=true
+				tox -e py36-cov -- -m integration || error=true
+
+				if [ $error ]
+				then
+					exit 1
+				fi
+			'''
+		}
+	)
+
+	stages.push(
+		stage('e2e tests') {
+			sh '''
+				tox -e pypy3-cov -- -m e2e || error=true
+				tox -e py36-cov -- -m e2e || error=true
+
+				if [ $error ]
+				then
+					exit 1
+				fi
+			'''
+		}
+	)
+
+	stages.push(
+		stage('coverage report') {
+			sh "tox -e coverage-report"
+		}
+	)
+
+	return stages
+}
+
+properties([
+	pipelineTriggers([
+		cron('H */3 * * *'),
+		pollSCM('H/5 * * * *')
+	])
+])
+
+branch = env.BRANCH_NAME
+def timerTrigger = currentBuild.rawBuild.getCause(hudson.triggers.TimerTrigger$TimerTriggerCause)
+
+node() {
+	checkout scm
+
+	switch(branch) {
+		case 'master':
+			if (!timerTrigger) {
+				full_build()
+
+				stage('build package') {
+					sh "tox -e wheel"
+				}
+			}
+			break
+
+		case 'develop':
+			if (timerTrigger) {
+				full_build()
+			}
+			break
+		default:
+			if (!timerTrigger) {
+				quick_build("without coverage")
+			}
+	}
 }
