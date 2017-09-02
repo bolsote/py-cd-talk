@@ -1,55 +1,67 @@
-def quick_build(def cov_option) {
+def linting_pipeline() {
 	return [
 		stage('linting') {
 			sh "tox -e linting"
 		},
 		stage('security') {
 			sh "tox -e security"
-		},
-		stage('unit tests') {
-			sh '''
-				tox -e pypy3-${cov_option} -- -m unit || error=true
-				tox -e py36-${cov_option} -- -m unit || error=true
-
-				if [ $error ]
-				then
-					exit 1
-				fi
-			'''
 		}
 	]
 }
 
+def tests_pipeline(def interpreter, def cov_option, def all) {
+	return {	
+		node() {
+			stage('unit tests') {
+				sh "tox -e ${interpreter}-${cov_option} -- -m unit"
+			}
+			
+			if(all) {
+				stage('integration tests') {
+					sh "tox -e ${interpreter}-${cov_option} -- -m integration"
+				}
+				stage('e2e tests') {
+					sh "tox -e ${interpreter}-${cov_option} -- -m e2e"
+				}
+			}
+		}
+	}
+}
+
+interpreters = ["pypy3", "py36"]
+
+def quick_build(def cov_option) {
+	checkout scm
+
+	def stages = linting_pipeline()
+
+	def tests_branches = [:]
+	for (interpreter in interpreters) {
+		tests_branches[interpreter] = tests_pipeline(interpreter, "nocov", false)
+	}
+	stages.push(
+		stage('tests') {
+			parallel(tests_branches)
+		}
+	)
+
+	return stages
+}
+
 def full_build() {
-	def stages = quick_build("cov")
-	stages.push(
-		stage('integration tests') {
-			sh '''
-				tox -e pypy3-cov -- -m integration || error=true
-				tox -e py36-cov -- -m integration || error=true
+	checkout scm
 
-				if [ $error ]
-				then
-					exit 1
-				fi
-			'''
+	def stages = linting_pipeline()
+
+	def tests_branches = [:]
+	for (interpreter in interpreters) {
+		tests_branches[interpreter] = tests_pipeline(interpreter, "nocov", false)
+	}
+	stages.push(
+		stage('tests') {
+			parallel(tests_branches)
 		}
 	)
-
-	stages.push(
-		stage('e2e tests') {
-			sh '''
-				tox -e pypy3-cov -- -m e2e || error=true
-				tox -e py36-cov -- -m e2e || error=true
-
-				if [ $error ]
-				then
-					exit 1
-				fi
-			'''
-		}
-	)
-
 	stages.push(
 		stage('coverage report') {
 			sh "tox -e coverage-report"
@@ -63,34 +75,44 @@ properties([
 	pipelineTriggers([
 		cron('H */3 * * *'),
 		pollSCM('H/5 * * * *')
-	])
+	]),
+	buildDiscarder(logRotator(daysToKeepStr: '30'))
 ])
 
 branch = env.BRANCH_NAME
-def timerTrigger = currentBuild.rawBuild.getCause(hudson.triggers.TimerTrigger$TimerTriggerCause)
+
+@NonCPS
+def isTimerTriggered() {
+	def timerTrigger = currentBuild.rawBuild.getCause(hudson.triggers.TimerTrigger$TimerTriggerCause)
+	return !!timerTrigger
+}
 
 node() {
-	checkout scm
+	def isTimerTriggered = isTimerTriggered()
 
 	switch(branch) {
 		case 'master':
-			if (!timerTrigger) {
+			if (!isTimerTriggered) {
 				full_build()
 
 				stage('build package') {
 					sh "tox -e wheel"
 				}
+
+				deleteDir()
 			}
 			break
 
 		case 'develop':
-			if (timerTrigger) {
+			if (isTimerTriggered) {
 				full_build()
+				deleteDir()
 			}
 			break
 		default:
-			if (!timerTrigger) {
-				quick_build("without coverage")
+			if (!isTimerTriggered) {
+				quick_build("nocov")
+				deleteDir()
 			}
 	}
 }
