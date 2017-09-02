@@ -47,19 +47,19 @@ class FakeStorage:
 
         return name in self.STORE
 
-    def load(self, name):
+    def load(self, name, flagtype):
         """
         Load a flag's value from the store, given its name.
         """
 
-        return self.STORE[name]["value_binary"]
+        return self.STORE[name][f"value_{flagtype.value}"]
 
-    def store(self, name, value):
+    def store(self, name, value, flagtype):
         """
         Store a flag's value to the store, given its name.
         """
 
-        self.STORE[name]["value_binary"] = value
+        self.STORE[name][f"value_{flagtype.value}"] = value
 
     def used(self, name):
         """

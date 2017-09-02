@@ -76,29 +76,35 @@ class SQLStorage:
         res = self.connection.execute(query).fetchone()
         return res[0]
 
-    def load(self, name):
+    def load(self, name, flagtype):
         """
         Load a flag's value given its name. Updates the last used date.
         """
 
+        field = f"value_{flagtype.value}"
+
         with self.connection.begin():
-            query = sa.select([self.flags.c.value_binary]).\
+            query = sa.select([self.flags.c.get(field)]).\
                 where(self.flags.c.name == name)
             data = self.connection.execute(query).fetchone()
+
             query = self.flags.update().\
                 where(self.flags.c.name == name).\
                 values(used=sa.func.now())
             self.connection.execute(query)
-            return data["value_binary"]
 
-    def store(self, name, value):
+            return data[field]
+
+    def store(self, name, value, flagtype):
         """
         Store a new value for a flag, given its name.
         """
 
+        field = f"value_{flagtype.value}"
+
         query = self.flags.update().\
             where(self.flags.c.name == name).\
-            values(value_binary=value)
+            values(**{field: value})
         self.connection.execute(query)
 
     def used(self, name):

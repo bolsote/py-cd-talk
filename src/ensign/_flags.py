@@ -103,7 +103,7 @@ class Flag(metaclass=abc.ABCMeta):
         Get the flag's stored value.
         """
 
-        return self.store.load(self.name)
+        return self.store.load(self.name, self.TYPE)
 
     @value.setter
     def value(self, val):
@@ -111,7 +111,7 @@ class Flag(metaclass=abc.ABCMeta):
         Set the flag's stored value.
         """
 
-        self.store.store(self.name, val)
+        self.store.store(self.name, val, self.TYPE)
 
     @property
     def active(self):

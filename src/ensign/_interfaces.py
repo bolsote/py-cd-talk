@@ -41,10 +41,10 @@ class IStorage(Interface):
     def exists(name):
         """Check if the flag exists in the store."""
 
-    def load(name):
+    def load(name, type):
         """Load a value."""
 
-    def store(name, value):
+    def store(name, value, type):
         """Store a value."""
 
     def used(name):

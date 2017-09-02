@@ -187,18 +187,18 @@ class TestSQLBackedFlags:
 @pytest.mark.usefixtures("db")
 class TestSQLStorage:
     def test_exists(self):
-        DefaultStorage.create("flag0", flagtype=FlagTypes.BINARY)
+        DefaultStorage.create("flag0", FlagTypes.BINARY)
         assert DefaultStorage.exists("flag0")
         assert not DefaultStorage.exists("flag1")
 
     def test_load_store(self):
-        DefaultStorage.create("flag0", flagtype=FlagTypes.BINARY)
-        DefaultStorage.store("flag0", True)
-        assert DefaultStorage.load("flag0") is True
-        DefaultStorage.store("flag0", False)
-        assert DefaultStorage.load("flag0") is False
+        DefaultStorage.create("flag0", FlagTypes.BINARY)
+        DefaultStorage.store("flag0", True, FlagTypes.BINARY)
+        assert DefaultStorage.load("flag0", FlagTypes.BINARY) is True
+        DefaultStorage.store("flag0", False, FlagTypes.BINARY)
+        assert DefaultStorage.load("flag0", FlagTypes.BINARY) is False
 
     def test_used(self):
         used = datetime.datetime.now()
-        DefaultStorage.create("flag0", flagtype=FlagTypes.BINARY, used=used)
+        DefaultStorage.create("flag0", FlagTypes.BINARY, used=used)
         assert DefaultStorage.used("flag0") == used
