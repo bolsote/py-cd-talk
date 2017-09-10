@@ -1,11 +1,14 @@
 bandit
+coverage
 flake8
 hypothesis
 invoke
 pdbpp
 pylint
+pyramid_debugtoolbar
 pytest
 pytest-benchmark
 safety
 tox
 vmprof
+WebTest

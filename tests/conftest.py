@@ -9,12 +9,15 @@ import os
 import pytest
 
 import sqlalchemy as sa
+from webtest import TestApp as WebTestApp
 from zope.interface import implementer
 from zope.interface.verify import verifyObject
 
 from ensign import BinaryFlag
 from ensign._interfaces import IStorage
 from ensign._storage import DefaultStorage
+
+from ensign.api import main
 
 
 @implementer(IStorage)
@@ -141,3 +144,14 @@ def db(_pre_db):
     trans = conn.begin()
     yield
     trans.rollback()
+
+
+@pytest.fixture(scope="function")
+def api():
+    """
+    Fixture providing a WebTest-produced instance of the flags API.
+    """
+
+    return WebTestApp(main({
+        "testing": True,
+    }))
