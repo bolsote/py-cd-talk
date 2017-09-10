@@ -16,7 +16,7 @@ def tests_pipeline(def interpreter, def cov_option, def all) {
 
             stage('unit tests') {
                 def coverage_file = ".coverage.unit.${interpreter}"
-                withEnv(['COVERAGE_FILE=${coverage_file}']) {
+                withEnv(["COVERAGE_FILE=${coverage_file}"]) {
                     sh "tox -e ${interpreter}-${cov_option} -- -m unit --junitxml=report.xml"
                 }
             }
@@ -24,7 +24,7 @@ def tests_pipeline(def interpreter, def cov_option, def all) {
             if(all) {
                 stage('integration tests') {
                     def coverage_file = ".coverage.integration.${interpreter}"
-                    withEnv(['COVERAGE_FILE=${coverage_file}']) {
+                    withEnv(["COVERAGE_FILE=${coverage_file}"]) {
                         sh "tox -e ${interpreter}-${cov_option} -- -m integration --junitxml=report.xml"
                     }
                 }
@@ -33,8 +33,9 @@ def tests_pipeline(def interpreter, def cov_option, def all) {
                 //    sh "tox -e ${interpreter}-${cov_option} -- -m e2e"
                 //}
 
-                stash name: "coveragedata", includes: ".coverage.*"
-           }
+            }
+
+            stash name: "coveragedata", includes: ".coverage.*"
         }
     }
 }
@@ -66,7 +67,7 @@ def full_build() {
 
     def tests_branches = [:]
     for (interpreter in interpreters) {
-        tests_branches[interpreter] = tests_pipeline(interpreter, "cov", false)
+        tests_branches[interpreter] = tests_pipeline(interpreter, "cov", true)
     }
     stages.push(
         stage('tests') {
@@ -88,7 +89,7 @@ def full_build() {
 properties([
     pipelineTriggers([
         cron('H */3 * * *'),
-        pollSCM('H/15 * * * *')
+        pollSCM('H/5 * * * *')
     ]),
     buildDiscarder(logRotator(daysToKeepStr: '30'))
 ])
