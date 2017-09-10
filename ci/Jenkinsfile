@@ -15,19 +15,23 @@ def tests_pipeline(def interpreter, def cov_option, def all) {
             checkout scm
 
             stage('unit tests') {
-                def coverage_file = ".coverage.unit.${interpreter}"
-                withEnv(["COVERAGE_FILE=${coverage_file}"]) {
-                    sh "tox -e ${interpreter}-${cov_option} -- -m unit --junitxml=report.xml"
+                withEnv(["COVERAGE_FILE=.coverage.unit.${interpreter}"]) {
+                    sh "tox -e ${interpreter}-${cov_option} -- -m unit"
                 }
             }
             
             if(all) {
                 stage('integration tests') {
-                    def coverage_file = ".coverage.integration.${interpreter}"
-                    withEnv(["COVERAGE_FILE=${coverage_file}"]) {
-                        sh "tox -e ${interpreter}-${cov_option} -- -m integration --junitxml=report.xml"
+                    withEnv(["COVERAGE_FILE=.coverage.integration.${interpreter}"]) {
+                        sh "tox -e ${interpreter}-${cov_option} -- -m integration"
                     }
                 }
+
+                stage("component tests") {
+                    withEnv(["COVERAGE_FILE=.coverage.component.${interpreter}"]) {
+                        sh "tox -e ${interpreter}-${cov_option} -- -m component"
+                    }
+                } 
 
                 //stage('e2e tests') {
                 //    sh "tox -e ${interpreter}-${cov_option} -- -m e2e"
