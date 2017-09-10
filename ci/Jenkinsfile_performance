@@ -7,17 +7,19 @@ properties([
 branch = env.BRANCH_NAME
 
 node() {
-	checkout scm
-
 	if (branch == 'develop') {
+		checkout scm
+
 		sh '''
 			tox -e pypy3-benchmark || error=true
-			tox -e py26-benchmark || error=true
+			tox -e py36-benchmark || error=true
 
 			if [ $error ]
 			then
 				exit 1
 			fi
 		'''
+
+		deleteDir()
 	}
 }
