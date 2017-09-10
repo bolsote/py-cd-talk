@@ -41,6 +41,13 @@ class TestFlagBasics:
         with pytest.raises(FlagDoesNotExist):
             BinaryFlag("flag42", store=fakestore)
 
+    def test_get_all_flags(self, fakestore):
+        names = ["flag0", "flag1", "flag2"]
+        for name in names:
+            BinaryFlag.create(name, store=fakestore)
+        for flag in BinaryFlag.all(store=fakestore):
+            assert flag.name in names
+
 
 @pytest.mark.unit
 class TestBinaryFlagAliases:
@@ -221,6 +228,13 @@ class TestSQLBackedFlags:
         flag0 = BinaryFlag.create(**want_info)
         assert flag0.info == want_info
 
+    def test_get_all_flags(self):
+        names = ["flag0", "flag1", "flag2"]
+        for name in names:
+            BinaryFlag.create(name)
+        for flag in BinaryFlag.all():
+            assert flag.name in names
+
 
 @pytest.mark.integration
 @pytest.mark.usefixtures("db")
@@ -241,3 +255,10 @@ class TestSQLStorage:
         used = datetime.datetime.now()
         DefaultStorage.create("flag0", FlagTypes.BINARY, used=used)
         assert DefaultStorage.used("flag0") == used
+
+    def test_get_all(self):
+        names = ["flag0", "flag1", "flag2"]
+        for name in names:
+            DefaultStorage.create(name, FlagTypes.BINARY)
+        for flag in DefaultStorage.all():
+            assert flag in names

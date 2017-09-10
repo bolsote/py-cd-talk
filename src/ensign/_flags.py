@@ -57,6 +57,17 @@ class Flag(metaclass=abc.ABCMeta):
         store.create(name, cls.TYPE, **kwargs)
         return cls(name, store=store)
 
+    @classmethod
+    def all(cls, store=DefaultStorage):
+        """
+        Return all flags in the store.
+        """
+
+        return [
+            cls(flag, store=store)
+            for flag in store.all()
+        ]
+
     def __str__(self):
         return f"<Flag({self.name}={self.value})>"
 

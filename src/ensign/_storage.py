@@ -125,5 +125,16 @@ class SQLStorage:
             where(self.flags.c.name == name)
         return self.connection.execute(query).fetchone()
 
+    def all(self):
+        """
+        Return all flags.
+        """
+
+        query = sa.select([self.flags.c.name])
+        return [
+            row.name
+            for row in self.connection.execute(query).fetchall()
+        ]
+
 
 DefaultStorage = SQLStorage()

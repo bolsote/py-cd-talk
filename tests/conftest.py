@@ -23,9 +23,8 @@ class FakeStorage:
     Fake storage class, to simulate a very simple datastore.
     """
 
-    STORE = {}
-
     def __init__(self):
+        self.STORE = {}
         assert verifyObject(IStorage, self)
 
     def create(self, name, flagtype, **kwargs):
@@ -80,6 +79,13 @@ class FakeStorage:
             description=info.get("description", ""),
             tags=info.get("tags", ""),
         )
+
+    def all(self):
+        """
+        Return all flags.
+        """
+
+        return self.STORE.keys()
 
 
 @pytest.fixture(scope="function")
