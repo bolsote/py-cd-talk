@@ -116,5 +116,14 @@ class SQLStorage:
             where(self.flags.c.name == name)
         return self.connection.execute(query).fetchone()["used"]
 
+    def info(self, name):
+        """
+        Return a flag's full information.
+        """
+
+        query = sa.select([self.flags]).\
+            where(self.flags.c.name == name)
+        return self.connection.execute(query).fetchone()
+
 
 DefaultStorage = SQLStorage()

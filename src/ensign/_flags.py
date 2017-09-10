@@ -129,6 +129,21 @@ class Flag(metaclass=abc.ABCMeta):
 
         return FlagActive.ACTIVE
 
+    @property
+    def info(self):
+        """
+        Return the flag's descriptive information. To be used in user-facing
+        interfaces.
+        """
+
+        info = self.store.info(self.name)
+        return dict(
+            name=info["name"],
+            label=info["label"] or "",
+            description=info["description"] or "",
+            tags=info["tags"] or "",
+        )
+
 
 @implementer(IFlag)
 class BinaryFlag(Flag):

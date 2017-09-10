@@ -68,6 +68,19 @@ class FakeStorage:
 
         return self.STORE[name].get("used")
 
+    def info(self, name):
+        """
+        Return a flag's descriptive information.
+        """
+
+        info = self.STORE[name]
+        return dict(
+            name=info.get("name"),
+            label=info.get("label", ""),
+            description=info.get("description", ""),
+            tags=info.get("tags", ""),
+        )
+
 
 @pytest.fixture(scope="function")
 def fakestore():

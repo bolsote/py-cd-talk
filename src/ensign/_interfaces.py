@@ -15,6 +15,7 @@ class IFlag(Interface):
     name = Attribute("""Flag name""")
     value = Attribute("""Flag value""")
     active = Attribute("""Flag activity indicator""")
+    info = Attribute("""Flag descriptive information""")
 
     def create(name, store, **kwargs):
         """
@@ -49,3 +50,6 @@ class IStorage(Interface):
 
     def used(name):
         """Get last used date."""
+
+    def info(name):
+        """Get flag descriptive information."""

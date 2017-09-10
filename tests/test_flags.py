@@ -140,6 +140,35 @@ class TestFlagActive:
         assert flag0.active == FlagActive.INACTIVE
 
 
+@pytest.mark.unit
+class TestFlagInfo:
+    def test_basic_info(self, fakestore):
+        want_info = {
+            "name": "flag0",
+            "label": "",
+            "description": "",
+            "tags": "",
+        }
+        flag0 = BinaryFlag.create(
+            name="flag0",
+            store=fakestore,
+        )
+        assert flag0.info == want_info
+
+    def test_full_info(self, fakestore):
+        want_info = {
+            "name": "flag0",
+            "label": "Fake flag",
+            "description": "Flag for testing purposes",
+            "tags": "test,fake",
+        }
+        flag0 = BinaryFlag.create(
+            store=fakestore,
+            **want_info,
+        )
+        assert flag0.info == want_info
+
+
 @pytest.mark.integration
 @pytest.mark.usefixtures("db")
 class TestSQLBackedFlags:
@@ -181,6 +210,16 @@ class TestSQLBackedFlags:
             used=datetime.datetime.now() - datetime.timedelta(days=8),
         )
         assert flag0.active == FlagActive.INACTIVE
+
+    def test_flag_info(self):
+        want_info = {
+            "name": "flag0",
+            "label": "Fake flag",
+            "description": "Flag for testing purposes",
+            "tags": "test,fake",
+        }
+        flag0 = BinaryFlag.create(**want_info)
+        assert flag0.info == want_info
 
 
 @pytest.mark.integration
