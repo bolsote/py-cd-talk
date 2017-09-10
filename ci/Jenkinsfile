@@ -12,6 +12,8 @@ def linting_pipeline() {
 def tests_pipeline(def interpreter, def cov_option, def all) {
     return {    
         node() {
+            checkout scm
+
             stage('unit tests') {
                 sh "tox -e ${interpreter}-${cov_option} -- -m unit"
             }
