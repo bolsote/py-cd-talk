@@ -15,17 +15,26 @@ def tests_pipeline(def interpreter, def cov_option, def all) {
             checkout scm
 
             stage('unit tests') {
-                sh "tox -e ${interpreter}-${cov_option} -- -m unit"
+                def coverage_file = ".coverage.unit.${interpreter}"
+                withEnv(['COVERAGE_FILE=${coverage_file}']) {
+                    sh "tox -e ${interpreter}-${cov_option} -- -m unit --junitxml=report.xml"
+                }
             }
             
             if(all) {
                 stage('integration tests') {
-                    sh "tox -e ${interpreter}-${cov_option} -- -m integration"
+                    def coverage_file = ".coverage.integration.${interpreter}"
+                    withEnv(['COVERAGE_FILE=${coverage_file}']) {
+                        sh "tox -e ${interpreter}-${cov_option} -- -m integration --junitxml=report.xml"
+                    }
                 }
+
                 //stage('e2e tests') {
                 //    sh "tox -e ${interpreter}-${cov_option} -- -m e2e"
                 //}
-            }
+
+                stash name: "coveragedata", includes: ".coverage.*"
+           }
         }
     }
 }
@@ -66,7 +75,10 @@ def full_build() {
     )
     stages.push(
         stage('coverage report') {
-            sh "tox -e coverage-report"
+            dir("coveragedata") {
+                unstash "coveragedata"
+            }
+            sh "tox -e coverage-report -- ./coveragedata"
         }
     )
 
@@ -76,7 +88,7 @@ def full_build() {
 properties([
     pipelineTriggers([
         cron('H */3 * * *'),
-        pollSCM('H/5 * * * *')
+        pollSCM('H/15 * * * *')
     ]),
     buildDiscarder(logRotator(daysToKeepStr: '30'))
 ])
