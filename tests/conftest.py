@@ -146,7 +146,7 @@ def db(_pre_db):
     trans.rollback()
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def api():
     """
     Fixture providing a WebTest-produced instance of the flags API.
