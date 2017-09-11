@@ -23,6 +23,11 @@ class IFlag(Interface):
         persisted in the given store.
         """
 
+    def all(store):
+        """
+        Retrieve all flags in the store.
+        """
+
     def _check():
         """
         Check whether the flag current value means the feature is active.
@@ -53,3 +58,6 @@ class IStorage(Interface):
 
     def info(name):
         """Get flag descriptive information."""
+
+    def all():
+        """Get all flags."""
