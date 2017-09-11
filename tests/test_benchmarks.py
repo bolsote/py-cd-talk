@@ -1,4 +1,4 @@
-# pylint: disable=invalid-name,missing-docstring,unused-argument
+# pylint: skip-file
 
 import uuid
 
@@ -62,8 +62,8 @@ def test_benchmark_api_post_full(benchmark, db, api):
             {
                 "name": str(uuid.uuid4()),
                 "label": "Test flag",
-                "description": "Flag for testing purposes",
-                "tags": "test,flag,fake",
+                "description": "Fake flag",
+                "tags": "test",
             },
             status=201,
         )
@@ -74,16 +74,15 @@ def test_benchmark_api_post_full(benchmark, db, api):
 def test_benchmark_api_get(benchmark, db, api):
     BinaryFlag.create(
         "flag0",
-        label="Fake flag",
-        description="Flag for testing purposes",
-        tags="test,fake",
+        label="Flag",
+        description="Testing flag",
+        tags="test",
     )
     benchmark(api.get, "/flags/flag0", status=200)
 
 
 @pytest.mark.benchmark
 def test_benchmark_api_get_all(benchmark, db, api):
-    names = ["flag0", "flag1", "flag42"]
     for k in range(100):
         BinaryFlag.create(f"flag{k}")
     benchmark(api.get, "/flags", status=200)

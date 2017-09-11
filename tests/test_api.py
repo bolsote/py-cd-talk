@@ -36,7 +36,7 @@ class TestFlagsAPI:
             "description": "Flag for testing purposes",
             "tags": "test,flag,fake",
         }
-        response = api.post_json("/flags", payload, status=201)
+        api.post_json("/flags", payload, status=201)
         flag = BinaryFlag("test_flag")
 
         assert flag.info == payload
@@ -46,7 +46,7 @@ class TestFlagsAPI:
             "value": True,
         }
         flag = BinaryFlag.create("flag0")
-        response = api.patch_json("/flags/flag0", payload, status=204)
+        api.patch_json("/flags/flag0", payload, status=204)
 
         assert flag
 
