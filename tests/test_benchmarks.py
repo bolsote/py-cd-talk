@@ -39,3 +39,57 @@ def test_benchmark_store(benchmark, db):
 
     benchmark(store_flag, flag)
     assert flag.value
+
+
+@pytest.mark.benchmark
+def test_benchmark_api_post(benchmark, db, api):
+    def request():
+        api.post_json(
+            "/flags",
+            {
+                "name": str(uuid.uuid4()),
+            },
+            status=201,
+        )
+    benchmark(request)
+
+
+@pytest.mark.benchmark
+def test_benchmark_api_post_full(benchmark, db, api):
+    def request():
+        api.post_json(
+            "/flags",
+            {
+                "name": str(uuid.uuid4()),
+                "label": "Test flag",
+                "description": "Flag for testing purposes",
+                "tags": "test,flag,fake",
+            },
+            status=201,
+        )
+    benchmark(request)
+
+
+@pytest.mark.benchmark
+def test_benchmark_api_get(benchmark, db, api):
+    BinaryFlag.create(
+        "flag0",
+        label="Fake flag",
+        description="Flag for testing purposes",
+        tags="test,fake",
+    )
+    benchmark(api.get, "/flags/flag0", status=200)
+
+
+@pytest.mark.benchmark
+def test_benchmark_api_get_all(benchmark, db, api):
+    names = ["flag0", "flag1", "flag42"]
+    for k in range(100):
+        BinaryFlag.create(f"flag{k}")
+    benchmark(api.get, "/flags", status=200)
+
+
+@pytest.mark.benchmark
+def test_benchmark_patch(benchmark, db, api):
+    BinaryFlag.create("flag0")
+    benchmark(api.patch_json, "/flags/flag0", {"value": True}, status=204)
