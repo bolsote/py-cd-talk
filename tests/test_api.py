@@ -15,18 +15,16 @@ class TestFlagsAPI:
             description="Flag for testing purposes",
             tags="test,fake",
         )
-        response = api.get("/flags/flag0")
+        response = api.get("/flags/flag0", status=200)
 
-        assert response.status_code == 200
         assert response.json["name"] == "flag0"
 
     def test_collection_get(self, api):
         names = ["flag0", "flag1", "flag42"]
         for name in names:
             BinaryFlag.create(name)
-        response = api.get("/flags")
+        response = api.get("/flags", status=200)
 
-        assert response.status_code == 200
         assert len(response.json) == len(names)
         for item in response.json:
             assert item["name"] in names
@@ -38,10 +36,9 @@ class TestFlagsAPI:
             "description": "Flag for testing purposes",
             "tags": "test,flag,fake",
         }
-        response = api.post_json("/flags", payload)
+        response = api.post_json("/flags", payload, status=201)
         flag = BinaryFlag("test_flag")
 
-        assert response.status_code == 201
         assert flag.info == payload
 
     def test_patch(self, api):
@@ -49,24 +46,27 @@ class TestFlagsAPI:
             "value": True,
         }
         flag = BinaryFlag.create("flag0")
-        response = api.patch_json("/flags/flag0", payload)
+        response = api.patch_json("/flags/flag0", payload, status=204)
 
-        assert response.status_code == 204
         assert flag
 
     def test_flag_flow(self, api):
-        response = api.post_json("/flags", {"name": "flag_flow"})
-        assert response.status_code == 201
+        response = api.post_json(
+            "/flags",
+            {"name": "flag_flow"},
+            status=201,
+        )
 
-        response = api.get("/flags")
-        assert response.status_code == 200
+        response = api.get("/flags", status=200)
         assert len(response.json) == 1
 
-        response = api.patch_json("/flags/flag_flow", {"value": True})
-        assert response.status_code == 204
+        response = api.patch_json(
+            "/flags/flag_flow",
+            {"value": True},
+            status=204,
+        )
 
-        response = api.get("/flags/flag_flow")
-        assert response.status_code == 200
+        response = api.get("/flags/flag_flow", status=200)
         assert response.json["value"]
 
 
