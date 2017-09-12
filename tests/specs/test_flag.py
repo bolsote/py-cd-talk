@@ -10,15 +10,12 @@ from pytest_bdd import (
 from ensign import BinaryFlag, DefaultStorage
 
 
-@pytest.fixture(scope="module")
-def flag(_pre_db):
+@pytest.fixture
+def flag(db):
     """
     Create a flag for the current feature under test, clean up when done.
     """
-    conn = DefaultStorage.connection
-    trans = conn.begin()
-    yield BinaryFlag.create("flag0")
-    trans.rollback()
+    return BinaryFlag.create("flag0")
 
 
 @given('a feature flag named "flag0"')
