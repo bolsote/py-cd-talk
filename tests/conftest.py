@@ -155,3 +155,30 @@ def api():
     return WebTestApp(main({
         "testing": True,
     }))
+
+
+def pytest_addoption(parser):
+    """
+    Command line option to enable acceptance tests.
+    """
+
+    parser.addoption(
+        "--specs",
+        action="store_true",
+        help="Run acceptance test suite",
+    )
+
+
+def pytest_runtest_setup(item):
+    """
+    If the --spec command line argument is passed, run only acceptance tests.
+    Otherwise, skip them.
+    """
+
+    marker = item.get_marker("spec")
+    if item.config.getoption("--specs"):
+        if marker is None:
+            pytest.skip()
+    else:
+        if marker is not None:
+            pytest.skip()
