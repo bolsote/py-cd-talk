@@ -1,4 +1,4 @@
-"""Flag feature tests."""
+"Flag feature tests."""
 
 import pytest
 from pytest_bdd import (
@@ -7,7 +7,7 @@ from pytest_bdd import (
     then,
 )
 
-from ensign import BinaryFlag, DefaultStorage
+from ensign import BinaryFlag
 
 
 @pytest.fixture
