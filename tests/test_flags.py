@@ -45,7 +45,9 @@ class TestFlagBasics:
         names = ["flag0", "flag1", "flag2"]
         for name in names:
             BinaryFlag.create(name, store=fakestore)
-        for flag in BinaryFlag.all(store=fakestore):
+        allflags = BinaryFlag.all(store=fakestore)
+        assert len(allflags) == len(names)
+        for flag in allflags:
             assert flag.name in names
 
 
@@ -232,7 +234,9 @@ class TestSQLBackedFlags:
         names = ["flag0", "flag1", "flag2"]
         for name in names:
             BinaryFlag.create(name)
-        for flag in BinaryFlag.all():
+        allflags = BinaryFlag.all()
+        assert len(allflags) == len(names)
+        for flag in allflags:
             assert flag.name in names
 
 
@@ -260,5 +264,7 @@ class TestSQLStorage:
         names = ["flag0", "flag1", "flag2"]
         for name in names:
             DefaultStorage.create(name, FlagTypes.BINARY)
-        for flag in DefaultStorage.all():
+        allitems = DefaultStorage.all()
+        assert len(allitems) == len(names)
+        for flag in allitems:
             assert flag in names
