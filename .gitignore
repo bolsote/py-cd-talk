@@ -1,5 +1,10 @@
 ve/
 
+pkgstage/
+wheelstash/
+plist
+*.txz
+
 __pycache__/
 *.py[cod]
 *.so
