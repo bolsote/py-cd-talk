@@ -67,8 +67,8 @@ pipelines:
                   - "-m unit"
                   - "--junitxml=report.xml"
   "flags-full":
-  	group: flags
-  	locking: off
+    group: flags
+    locking: off
     materials:
       "flags-source":
         git: https://github.com/bolsote/py-cd-talk.git
