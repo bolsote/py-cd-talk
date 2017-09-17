@@ -1,0 +1,222 @@
+#py-cd-talk.gocd.yaml
+environments:
+  dev:
+    pipelines:
+      - flags-quick
+      - flags-full 
+pipelines:
+  flags-quick:
+    group: flags
+    locking: off
+    materials:
+      flags-source:
+        git: https://github.com/bolsote/py-cd-talk.git
+    stages:
+      - Linting 
+        jobs:
+          Linting:
+            tasks:
+              - exec:
+                run_if: passed
+                command: tox
+                arguments:
+                  - -e linting
+          Security:
+            tasks:
+              - exec:
+                run_if: passed
+                command: tox
+                arguments:
+                  - -e security
+      - UnitTests:
+        jobs:
+          tests-pypy3:
+            environment_variables:
+              COVERAGE_FILE: .coverage.unit.pypy3
+            artifacts:
+              - test:
+                source: report.xml
+              - build:
+                source: .coverage.unit.pypy3
+                destination: coveragedata/
+            tasks:
+              - exec:
+                run_if: passed
+                command: tox
+                arguments:
+                  - -e pypy3-cov
+                  - --
+                  - -m unit
+                  - --junitxml=report.xml
+          tests-py36:
+            environment_variables:
+              COVERAGE_FILE: .coverage.unit.py36
+            artifacts:
+              - test:
+                source: report.xml
+              - build:
+                source: .coverage.unit.py36
+                destination: coveragedata/
+            tasks:
+              - exec:
+                run_if: passed
+                command: tox
+                arguments:
+                  - -e py36-cov
+                  - --
+                  - -m unit
+                  - --junitxml=report.xml
+  flags-full:
+    materials:
+      flags-source:
+        git: https://github.com/bolsote/py-cd-talk.git
+        branch: master
+      flags-quick:
+        pipeline: flags-quick
+        stage: UnitTests
+    stages:
+      - Integration:
+        jobs:
+          tests-pypy3:
+            environment_variables:
+              COVERAGE_FILE: .coverage.integration.pypy3
+            artifacts:
+              - test:
+                source: report.xml
+              - build:
+                source: .coverage.integration.pypy3
+                destination: coverage/
+            tasks:
+              - exec:
+                run_if: passed
+                command: tox
+                arguments:
+                  - -e pypy3-cov
+                  - --
+                  - -m integration
+                  - --junitxml=report.xml
+          tests-py36:
+            environment_variables:
+              COVERAGE_FILE: .coverage.integration.py36
+            artifacts:
+              - test:
+                source: report.xml
+              - build:
+                source: .coverage.integration.py36
+                destination: coverage/
+            tasks:
+              - exec:
+                 run_if: passed
+                 command: tox
+                 arguments:
+                   - -e py36-cov
+                   - --
+                   - -m integration
+                   - --junitxml=report.xml
+      - Component:
+        jobs:
+          tests-pypy3:
+            environment_variables:
+              COVERAGE_FILE: .coverage.component.pypy3
+            artifacts:
+              - test:
+                source: report.xml
+              - build:
+                source: .coverage.component.pypy3
+                destination: coverage/
+            tasks:
+              - exec:
+                run_if: passed
+                command: tox
+                arguments:
+                  - -e pypy3-cov
+                  - --
+                  - -m component
+                  - --junitxml=report.xml
+          tests-py36:
+            environment_variables:
+              COVERAGE_FILE: .coverage.component.py36
+            artifacts:
+              - test:
+                source: report.xml
+              - build:
+                source: .coverage.component.py36
+                destination: coverage/
+            tasks:
+              - exec:
+                run_if: passed
+                command: tox
+                arguments:
+                  - -e py36-cov
+                  - --
+                  - -m integration
+                  - --junitxml=report.xml
+      - Acceptance:
+        jobs:
+          tests-pypy3:
+            tasks:
+              - exec:
+                run_if: passed
+                command: tox
+                arguments:
+                  - -e pypy3-specs
+          tests-py36:
+            tasks:
+              - exec:
+                run_if: passed
+                command: tox
+                arguments:
+                  - -e py36-specs
+      - Coverage:
+        jobs:
+          CoverageReport:
+            tabs:
+              Coverage: coverage/htmlcov/index.html
+            artifacts:
+              - test:
+                source: htmlcov
+                destination: coverage
+            tasks:
+              -fetch:
+                pipeline: flags-quick
+                stage: UnitTests
+                job: tests-pypy3
+                source: coveragedata/
+                run_if: passed
+              - fetch:
+                pipeline: flags-quick
+                stage: UnitTests
+                job: tests-py36
+                source: coveragedata/
+                run_if: passed
+              - fetch:
+                pipeline: flags-full
+                stage: Integration
+                job: tests-pypy3
+                source: coveragedata/
+                run_if: passed
+              - fetch:
+                pipeline: flags-full
+                stage: Integration
+                job: tests-py36
+                source: coveragedata/
+                run_if: passed
+              - fetch:
+                pipeline: flags-full
+                stage: Component
+                job: tests-pypy3
+                source: coveragedata/
+                run_if: passed
+              - fetch:
+                pipeline: flags-full
+                stage: Component
+                job: tests-py36
+                source: coveragedata/
+                run_if: passed
+              -exec
+                run_if: passed
+                command: tox
+                arguments:
+                  - -e coverage-view
+                  - --
+                  - coveragedata/
