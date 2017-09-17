@@ -1,0 +1,46 @@
+name = "ensign";
+origin = "devel/ensign";
+version = "17.9.1";
+comment = "Flag management system";
+maintainer = "dev@marshland.es";
+www = "https://marshland.es.";
+abi = "FreeBSD:11:amd64";
+arch = "freebsd:11:x86:64";
+prefix = "/usr/local";
+desc = <<EOD
+Library and web service to manage feature flags.
+EOD;
+deps {
+	pypy3 {
+		origin = "";
+		version = "";
+	}
+	postgresql96-server {
+		origin = "";
+		version = "";
+	}
+}
+users [
+	"ensign",
+]
+groups [
+	"ensign",
+]
+scripts {
+	pre-install = <<EOD
+if [ -n "${PKG_ROOTDIR}" ] && [ "${PKG_ROOTDIR}" != "/" ]; then
+  PW="/usr/sbin/pw -R ${PKG_ROOTDIR}"
+else
+  PW=/usr/sbin/pw
+fi
+if ! ${PW} groupshow ensign >/dev/null 2>&1; then
+  ${PW} groupadd ensign -g 1111
+fi
+if ! ${PW} usershow ensign >/dev/null 2>&1; then
+  ${PW} useradd ensign -u 1111 -g 1111 -c "Ensign" -d /usr/local/ensign -s /bin/sh
+fi
+install -d -g ensign -o ensign /usr/local/ensign
+su -l postgres -c "createuser -dl ensign" >/dev/null 2>&1
+su -l postgres -c "createdb -O ensign ensign" >/dev/null 2>&1
+EOD;
+}
