@@ -177,7 +177,7 @@ pipelines:
                 source: htmlcov
                 destination: coverage
             tasks:
-              -fetch:
+              - fetch:
                 pipeline: flags-quick
                 stage: UnitTests
                 job: tests-pypy3
@@ -213,7 +213,7 @@ pipelines:
                 job: tests-py36
                 source: coveragedata/
                 run_if: passed
-              -exec
+              - exec
                 run_if: passed
                 command: tox
                 arguments:
