@@ -12,12 +12,12 @@ Library and web service to manage feature flags.
 EOD;
 deps {
 	pypy3 {
-		origin = "";
-		version = "";
+		origin = "lang/pypy3";
+		version = "5.8.0";
 	}
 	postgresql96-server {
-		origin = "";
-		version = "";
+		origin = "databases/postgresql96-server";
+		version = "9.6.3";
 	}
 }
 users [
@@ -41,6 +41,6 @@ if ! ${PW} usershow ensign >/dev/null 2>&1; then
 fi
 install -d -g ensign -o ensign /usr/local/ensign
 su -l postgres -c "createuser -dl ensign" >/dev/null 2>&1
-su -l postgres -c "createdb -O ensign ensign" >/dev/null 2>&1
+su -l postgres -c "createdb -O ensign flags" >/dev/null 2>&1
 EOD;
 }
