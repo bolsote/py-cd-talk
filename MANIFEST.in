@@ -1,0 +1,6 @@
+include LICENCE
+include *.ini
+prune ci
+prune .pkgfiles
+recursive-include src/ensign *.py
+recursive-include tests *.py
