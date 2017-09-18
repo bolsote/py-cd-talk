@@ -2,3 +2,4 @@ include LICENCE
 include *.ini
 prune ci
 prune .pkgfiles
+global-exclude *.py[cod] __pycache__

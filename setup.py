@@ -24,6 +24,7 @@ setup(
     package_dir={"": "src"},
     packages=find_packages(where="src"),
     install_requires=_REQUIRES,
+    include_package_data=True,
     python_requires=">=3.5",
     zip_safe=False,
     entry_points={
