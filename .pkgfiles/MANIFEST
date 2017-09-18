@@ -40,7 +40,7 @@ if ! ${PW} usershow ensign >/dev/null 2>&1; then
   ${PW} useradd ensign -u 1111 -g 1111 -c "Ensign" -d /usr/local/ensign -s /bin/sh
 fi
 install -d -g ensign -o ensign /usr/local/ensign
-su -l postgres -c "createuser -dl ensign" >/dev/null 2>&1
-su -l postgres -c "createdb -O ensign flags" >/dev/null 2>&1
+su -l postgres -c "createuser -dl ensign" >/dev/null 2>&1 || true
+su -l postgres -c "createdb -O ensign flags" >/dev/null 2>&1 || true
 EOD;
 }

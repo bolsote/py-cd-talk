@@ -19,6 +19,7 @@ setup(
     name="Ensign",
     version="17.9.1",
     description="Feature flag management framework and utilities",
+    license="ISC",
     author="Marshland",
     author_email="dev@marshland.es",
     package_dir={"": "src"},
