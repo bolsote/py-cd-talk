@@ -1,0 +1,263 @@
+environments:
+  flags_develop:
+    pipelines:
+      - develop_quick
+      - develop_full
+      - develop_package
+      - performance
+    agents:
+      - aa040791-db48-4221-b64e-ab9f0baffdbc 
+pipelines:
+  develop_quick:
+    group: flags_develop
+    materials:
+      source:
+        git: http://github.com/bolsote/py-cd-talk.git
+        branch: develop
+    stages:
+      - linting:
+          jobs:
+            linting:
+              tasks:
+               - exec:
+                   command: tox
+                   arguments:
+                     - "-e linting"
+            security:
+              tasks:
+                - exec:
+                   command: tox
+                   arguments:
+                     - "-e security"
+      - unit:
+          jobs:
+            tests_pypy3:
+              environment_variables:
+                COVERAGE_FILE: .coverage.unit.pypy3
+              artifacts:
+                - test:
+                    source: report.xml
+                - build:
+                    source: .coverage.unit.pypy3
+                    destination: coveragedata/
+              tasks:
+                - exec:
+                    run_if: passed
+                    command: tox
+                    arguments:
+                      - "-e pypy3-cov"
+                      - "--"
+                      - "-m unit"
+                      - "--junitxml=report.xml"
+            tests_py36:
+              environment_variables:
+                COVERAGE_FILE: .coverage.unit.py36
+              artifacts:
+                - test:
+                    source: report.xml
+                - build:
+                    source: .coverage.unit.py36
+                    destination: coveragedata/
+              tasks:
+                - exec:
+                    run_if: passed
+                    command: tox
+                    arguments:
+                      - "-e py36-cov"
+                      - "--"
+                      - "-m unit"
+                      - "--junitxml=report.xml"
+  develop_full:
+    group: flags_develop
+    materials:
+      source:
+        git: http://github.com/bolsote/py-cd-talk.git
+        branch: develop
+      quick_dependency:
+        pipeline: develop_quick
+        stage: unit
+    stages:
+      - integration:
+          jobs:
+            tests_pypy3:
+              environment_variables:
+                COVERAGE_FILE: .coverage.integration.pypy3
+              artifacts:
+                - test:
+                    source: report.xml
+                - build:
+                    source: .coverage.integration.pypy3
+                    destination: coveragedata/
+              tasks:
+                - exec:
+                    run_if: passed
+                    command: tox
+                    arguments:
+                      - "-e pypy3-cov"
+                      - "--"
+                      - "-m integration"
+                      - "--junitxml=report.xml"
+            tests_py36:
+              environment_variables:
+                COVERAGE_FILE: .coverage.integration.py36
+              artifacts:
+                - test:
+                    source: report.xml
+                - build:
+                    source: .coverage.integration.py36
+                    destination: coveragedata/
+              tasks:
+                - exec:
+                    run_if: passed
+                    command: tox
+                    arguments:
+                      - "-e py36-cov"
+                      - "--"
+                      - "-m integration"
+                      - "--junitxml=report.xml"
+      - component:
+          jobs:
+            tests_pypy3:
+              environment_variables:
+                COVERAGE_FILE: .coverage.component.pypy3
+              artifacts:
+                - test:
+                    source: report.xml
+                - build:
+                    source: .coverage.component.pypy3
+                    destination: coveragedata/
+              tasks:
+                - exec:
+                    run_if: passed
+                    command: tox
+                    arguments:
+                      - "-e pypy3-cov"
+                      - "--"
+                      - "-m component"
+                      - "--junitxml=report.xml"
+            tests_py36:
+              environment_variables:
+                COVERAGE_FILE: .coverage.component.py36
+              artifacts:
+                - test:
+                    source: report.xml
+                - build:
+                    source: .coverage.component.py36
+                    destination: coveragedata/
+              tasks:
+                - exec:
+                    run_if: passed
+                    command: tox
+                    arguments:
+                      - "-e py36-cov"
+                      - "--"
+                      - "-m component"
+                      - "--junitxml=report.xml"
+      - acceptance:
+          jobs:
+            tests_pypy3:
+              tasks:
+                - exec:
+                    run_if: passed
+                    command: tox
+                    arguments:
+                      - "-e pypy3-specs"
+            tests_py36:
+              tasks:
+                - exec:
+                    run_if: passed
+                    command: tox
+                    arguments:
+                      - "-e py36-specs"
+      - coverage:
+          jobs:
+            coverage_report:
+              tabs:
+                coverage: coverage/htmlcov/index.html
+              artifacts:
+                - test:
+                    source: htmlcov
+                    destination: coverage
+              tasks:
+                - fetch:
+                    pipeline: develop_quick
+                    stage: unit
+                    job: tests_pypy3
+                    source: coveragedata/
+                    run_if: passed
+                - fetch:
+                    pipeline: develop_quick
+                    stage: unit
+                    job: tests_py36
+                    source: coveragedata/
+                    run_if: passed
+                - fetch:
+                    pipeline: develop_full
+                    stage: integration
+                    job: tests_pypy3
+                    source: coveragedata/
+                    run_if: passed
+                - fetch:
+                    pipeline: develop_full
+                    stage: integration
+                    job: tests_py36
+                    source: coveragedata/
+                    run_if: passed
+                - fetch:
+                    pipeline: develop_full
+                    stage: component
+                    job: tests_pypy3
+                    source: coveragedata/
+                    run_if: passed
+                - fetch:
+                    pipeline: develop_full
+                    stage: component
+                    job: tests_py36
+                    source: coveragedata/
+                    run_if: passed
+                - exec:
+                    run_if: passed
+                    command: tox
+                    arguments:
+                      - "-e coverage-view"
+                      - "--"
+                      - coveragedata/
+  develop_package:
+    group: flags_develop
+    materials:
+      source:
+        git: http://github.com/bolsote/py-cd-talk.git
+        branch: develop
+      full_dependency:
+        pipeline: develop_full
+        stage: coverage
+    stages:
+      - package:
+          jobs:
+            package:
+              tasks:
+                - exec:
+                    run_if: passed
+                    command: tox
+                    arguments:
+                      - "-e wheel"
+  performance:
+    group: flags_develop
+    timer:
+      spec: "0 0 */6 * * ?"
+      only_on_changes: yes
+    materials:
+      source:
+        git: http://github.com/bolsote/py-cd-talk.git
+        branch: develop
+    stages:
+      - benchmark:
+          jobs:
+            benchmark_pypy:
+              tasks:
+                - exec:
+                    run_if: passed
+                    command: tox
+                    arguments:
+                      - "-e pypy3-benchmark"
+ 
