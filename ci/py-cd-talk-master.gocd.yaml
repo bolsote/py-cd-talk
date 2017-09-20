@@ -234,10 +234,14 @@ pipelines:
       - package:
           jobs:
             package:
+              artifacts:
+                - build:
+                    source: bin/
+                    destination: bin/
               tasks:
                 - exec:
                     run_if: passed
                     command: tox
                     arguments:
-                      - "-e wheel"
+                      - "-e package"
 
