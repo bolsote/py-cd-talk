@@ -1,9 +1,9 @@
 def linting_pipeline() {
     return [
-        stage('linting') {
+        stage("linting") {
             sh "tox -e linting"
         },
-        stage('security') {
+        stage("security") {
             sh "tox -e security"
         }
     ]
@@ -14,14 +14,14 @@ def tests_pipeline(def interpreter, def cov_option, def all) {
         node() {
             checkout scm
 
-            stage('unit tests') {
+            stage("unit tests") {
                 withEnv(["COVERAGE_FILE=.coverage.unit.${interpreter}"]) {
                     sh "tox -e ${interpreter}-${cov_option} -- -m unit"
                 }
             }
             
             if(all) {
-                stage('integration tests') {
+                stage("integration tests") {
                     withEnv(["COVERAGE_FILE=.coverage.integration.${interpreter}"]) {
                         sh "tox -e ${interpreter}-${cov_option} -- -m integration"
                     }
@@ -32,11 +32,10 @@ def tests_pipeline(def interpreter, def cov_option, def all) {
                         sh "tox -e ${interpreter}-${cov_option} -- -m component"
                     }
                 } 
-
-                //stage('e2e tests') {
-                //    sh "tox -e ${interpreter}-${cov_option} -- -m e2e"
-                //}
-
+                
+                stage("acceptance tests") {
+                    sh "tox -e ${interpreter}-specs"
+                }
             }
 
             stash name: "coveragedata", includes: ".coverage.*"
@@ -56,7 +55,7 @@ def quick_build(def cov_option) {
         tests_branches[interpreter] = tests_pipeline(interpreter, "nocov", false)
     }
     stages.push(
-        stage('tests') {
+        stage("tests") {
             parallel(tests_branches)
         }
     )
@@ -73,11 +72,13 @@ def full_build() {
     for (interpreter in interpreters) {
         tests_branches[interpreter] = tests_pipeline(interpreter, "cov", true)
     }
+
     stages.push(
-        stage('tests') {
+        stage("tests") {
             parallel(tests_branches)
         }
     )
+
     stages.push(
         stage('coverage report') {
             dir("coveragedata") {
@@ -87,12 +88,18 @@ def full_build() {
         }
     )
 
+    stages.push(
+        stage("package") {
+            sh "tox -e package"
+        }
+    )
+
     return stages
 }
 
 properties([
     pipelineTriggers([
-        cron('H */3 * * *'),
+        cron('H */6 * * *'),
         pollSCM('H/5 * * * *')
     ]),
     buildDiscarder(logRotator(daysToKeepStr: '30'))
@@ -113,17 +120,17 @@ node() {
         case 'master':
             if (!isTimerTriggered) {
                 full_build()
-
-                stage('build package') {
-                    sh "tox -e wheel"
-                }
-
                 deleteDir()
             }
             break
 
         case 'develop':
             if (isTimerTriggered) {
+                stage {
+                    sh "tox -e pypy3-benchmarks"
+                }
+                deleteDir()
+            } else {
                 full_build()
                 deleteDir()
             }
