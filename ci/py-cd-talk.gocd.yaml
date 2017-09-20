@@ -11,7 +11,7 @@ pipelines:
     group: flags
     materials:
       source:
-        scm: 5e9b10ad-3832-46fa-b040-a5cd9d596ffb
+        scm: d7aca22e-46f7-401a-993c-a0bb0bd86c1b
         blacklist:
           - master
     stages:
