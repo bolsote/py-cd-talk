@@ -3,7 +3,9 @@ environments:
     pipelines:
       - continuous
     agents:
-      - aa040791-db48-4221-b64e-ab9f0baffdbc 
+      - fbd37ad3-b2fc-4a22-9106-0a76bc7257ad
+      - 36e2b7ab-6f76-4da9-935a-49b56d03f48c
+      - 8d18d6f8-892e-4c90-9ced-6c340bd18677
 pipelines:
   continuous:
     group: flags
