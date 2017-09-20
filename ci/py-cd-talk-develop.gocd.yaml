@@ -252,6 +252,7 @@ pipelines:
         branch: develop
     stages:
       - benchmark:
+          approval: manual
           jobs:
             benchmark_pypy:
               tasks:
