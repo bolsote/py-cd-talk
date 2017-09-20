@@ -16,3 +16,6 @@ rm -f ${PREFIX}/bin/*.bak
 
 find ${PREFIX} -type f -or -type l | awk '{ sub(/pkgstage/, ""); print }' > plist
 pkg create -M .pkgfiles/MANIFEST -p plist -r ${PKG} -o .
+
+mkdir -p bin
+mv ensign-*.txz bin/
