@@ -30,38 +30,28 @@ pipelines:
       - unit:
           jobs:
             tests_pypy3:
-              environment_variables:
-                COVERAGE_FILE: .coverage.unit.pypy3
               artifacts:
                 - test:
                     source: report.xml
-                - build:
-                    source: .coverage.unit.pypy3
-                    destination: coveragedata/
               tasks:
                 - exec:
                     run_if: passed
                     command: tox
                     arguments:
-                      - "-e pypy3-cov"
+                      - "-e pypy3-nocov"
                       - "--"
                       - "-m unit"
                       - "--junitxml=report.xml"
             tests_py36:
-              environment_variables:
-                COVERAGE_FILE: .coverage.unit.py36
               artifacts:
                 - test:
                     source: report.xml
-                - build:
-                    source: .coverage.unit.py36
-                    destination: coveragedata/
               tasks:
                 - exec:
                     run_if: passed
                     command: tox
                     arguments:
-                      - "-e py36-cov"
+                      - "-e py36-nocov"
                       - "--"
                       - "-m unit"
                       - "--junitxml=report.xml"
